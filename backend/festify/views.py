@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.shortcuts import render
 from datetime import datetime, timedelta
 from calendar import monthrange
 from .models import UserProfile, Artist, Event, Ticket
@@ -212,3 +213,18 @@ class ArtistViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated()]
         return [AllowAny()]
+
+def registration_page(request):
+    return render(request, 'registration.html')
+
+def login_page(request):
+    return render(request, 'login.html')
+
+def logout_page(request):
+    return render(request, 'logout.html')
+
+def profile_page(request):
+    return render(request, 'profile.html')
+
+def tickets_page(request):
+    return render(request, 'tickets.html')

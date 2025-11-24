@@ -14,4 +14,9 @@ urlpatterns = [
     path('profile/tickets/', views.user_tickets, name='user-tickets'),
     path('calendar/', views.calendar_view, name='calendar'),
     path('', include(router.urls)),
+    path('pages/registration/', views.registration_page, name='registration-page'),
+    path('pages/login/', views.login_page, name='login-page'),
+    path('pages/logout/', views.logout_page, name='logout-page'),
+    path('pages/profile/', views.profile_page, name='profile-page'),
+    path('pages/tickets/', views.tickets_page, name='tickets-page'),
 ]
