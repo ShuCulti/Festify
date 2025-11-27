@@ -1,21 +1,39 @@
-from rest_framework import status, generics, viewsets
+import calendar
+from datetime import datetime, date, timedelta
+from calendar import monthrange
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.db.models import Q
+
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from django.db.models import Q
-from django.shortcuts import render
-from datetime import datetime, timedelta
-from calendar import monthrange
-from .models import UserProfile, Artist, Event, Ticket
+
+from .models import (
+    UserProfile,
+    Artist,
+    Event,
+    Ticket,
+    Performance,
+    Stage
+)
+
 from .serializers import (
     RegisterSerializer, UserSerializer, ArtistSerializer,
     EventListSerializer, EventDetailSerializer, EventCreateUpdateSerializer,
     TicketSerializer, ProfileSerializer
 )
+
 from .permissions import IsOrganizerAndOwner
+
+
+# ============================================
+# AUTH ENDPOINTS
+# ============================================
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -30,6 +48,7 @@ def register(request):
             'access': str(refresh.access_token),
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -60,10 +79,12 @@ def login(request):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         })
+
     return Response(
         {'error': 'Invalid credentials'},
         status=status.HTTP_401_UNAUTHORIZED
     )
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -75,6 +96,11 @@ def logout(request):
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
     except Exception:
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================
+# EVENT API (DRF)
+# ============================================
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
@@ -144,6 +170,11 @@ class EventViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
+
+# ============================================
+# PROFILE / TICKETS
+# ============================================
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -163,12 +194,18 @@ def profile(request):
 
     return Response(data)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_tickets(request):
     tickets = Ticket.objects.filter(user=request.user).select_related('event')
     serializer = TicketSerializer(tickets, many=True)
     return Response(serializer.data)
+
+
+# ============================================
+# JSON CALENDAR API
+# ============================================
 
 @api_view(['GET'])
 def calendar_view(request):
@@ -191,19 +228,21 @@ def calendar_view(request):
             days_dict[date_key] = []
         days_dict[date_key].append(EventListSerializer(event).data)
 
-    days = []
-    for day in range(1, last_day + 1):
-        date_key = datetime(year, month, day).date().isoformat()
-        days.append({
-            'date': date_key,
-            'events': days_dict.get(date_key, [])
-        })
+    days = [{
+        'date': datetime(year, month, day).date().isoformat(),
+        'events': days_dict.get(datetime(year, month, day).date().isoformat(), [])
+    } for day in range(1, last_day + 1)]
 
     return Response({
         'year': year,
         'month': month,
         'days': days
     })
+
+
+# ============================================
+# ARTIST API
+# ============================================
 
 class ArtistViewSet(viewsets.ModelViewSet):
     queryset = Artist.objects.all()
@@ -213,6 +252,11 @@ class ArtistViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated()]
         return [AllowAny()]
+
+
+# ============================================
+# HTML TEMPLATE PAGES
+# ============================================
 
 def registration_page(request):
     return render(request, 'registration.html')
@@ -228,3 +272,110 @@ def profile_page(request):
 
 def tickets_page(request):
     return render(request, 'tickets.html')
+
+
+# ============================================
+# FESTIVAL HTML VIEWS (Stage + Performance)
+# ============================================
+
+def home(request):
+    """Show the earliest performance TODAY for each stage."""
+    today = date.today()
+
+    events_today = Event.objects.filter(
+        start_datetime__date__lte=today
+    ).filter(
+        Q(end_datetime__date__gte=today) | Q(end_datetime__isnull=True)
+    )
+
+    performances_today = (
+        Performance.objects
+        .filter(event__in=events_today)
+        .select_related("artist", "stage", "event")
+        .order_by("start_time")
+    )
+
+    earliest_by_stage = {}
+    for perf in performances_today:
+        stage = perf.stage
+        current = earliest_by_stage.get(stage)
+        if current is None or perf.start_time < current.start_time:
+            earliest_by_stage[stage] = perf
+
+    stages = Stage.objects.order_by("order")
+    stage_cards = [{
+        "stage": stage,
+        "performance": earliest_by_stage.get(stage),
+    } for stage in stages]
+
+    return render(request, "events/home.html", {
+        "today": today,
+        "stage_cards": stage_cards,
+    })
+
+
+def month_calendar(request, year=None, month=None):
+    today = date.today()
+    year = int(year) if year else today.year
+    month = int(month) if month else today.month
+
+    _, num_days = calendar.monthrange(year, month)
+    first_day = date(year, month, 1)
+    last_day = date(year, month, num_days)
+
+    events = Event.objects.filter(
+        start_datetime__date__lte=last_day
+    ).filter(
+        Q(end_datetime__date__gte=first_day) | Q(end_datetime__isnull=True)
+    )
+
+    event_by_day = {}
+    for evt in events:
+        evt_start = evt.start_datetime.date()
+        evt_end = evt.end_datetime.date() if evt.end_datetime else evt_start
+
+        current = max(evt_start, first_day)
+        final = min(evt_end, last_day)
+
+        while current <= final:
+            event_by_day.setdefault(current, []).append(evt)
+            current += timedelta(days=1)
+
+    cal = calendar.Calendar(firstweekday=0)
+    raw_weeks = cal.monthdatescalendar(year, month)
+
+    weeks = []
+    for week in raw_weeks:
+        rows = []
+        for d in week:
+            rows.append({
+                "date": d,
+                "in_month": d.month == month,
+                "events": event_by_day.get(d, []),
+            })
+        weeks.append(rows)
+
+    return render(request, "events/calendar.html", {
+        "year": year,
+        "month": month,
+        "weeks": weeks,
+        "prev_year": year if month > 1 else year - 1,
+        "prev_month": month - 1 if month > 1 else 12,
+        "next_year": year if month < 12 else year + 1,
+        "next_month": month + 1 if month < 12 else 1,
+        "month_name": calendar.month_name[month],
+    })
+
+
+def event_detail(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    performances = (
+        event.performances
+        .select_related("artist", "stage")
+        .order_by("start_time", "stage__order")
+    )
+
+    return render(request, "events/event_detail.html", {
+        "event": event,
+        "performances": performances,
+    })

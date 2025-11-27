@@ -1,0 +1,26 @@
+{% extends "events/base.html" %}
+
+{% block content %}
+  <h1>{{ event.name }}</h1>
+  <p><strong>From:</strong> {{ event.start_date }}<br>
+     <strong>To:</strong> {{ event.end_date }}</p>
+
+  {% if event.description %}
+    <p>{{ event.description }}</p>
+  {% endif %}
+
+  <h2>Performances</h2>
+  {% if performances %}
+    <ul>
+      {% for perf in performances %}
+        <li>
+          {{ perf.start_time }}–{{ perf.end_time }}:
+          {{ perf.artist.name }} @ {{ perf.stage.name }}
+        </li>
+      {% endfor %}
+    </ul>
+    <p><strong>Location:</strong> {{ event.location }}</p>
+  {% else %}
+    <p>No performances linked to this event yet.</p>
+  {% endif %}
+{% endblock %}
