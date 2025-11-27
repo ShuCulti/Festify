@@ -1,3 +1,7 @@
 body {
     background-color: aquamarine;
 }
+
+nav a {
+    margin-right: 12px;
+}
