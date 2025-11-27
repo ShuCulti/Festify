@@ -3,9 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
+    <title>Register</title>
 </head>
 <body>
-    <h1>Registration Page</h1>
+<h1>Create an Account</h1>
+
+<form id="registerForm">
+    <label>Username:</label><br>
+    <input type="text" id="username"><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" id="email"><br><br>
+
+    <label>Password:</label><br>
+    <input type="password" id="password"><br><br>
+
+    <label>Confirm password:</label><br>
+    <input type="password" id="confirm_password"><br><br>
+
+    <button type="submit">Register</button>
+</form>
+
+<p id="result" style="white-space: pre-wrap;"></p>
+
+<script>
+    document.getElementById("registerForm").onsubmit = async function (e) {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirm_password").value;
+        const resultEl = document.getElementById("result");
+
+        // simple client-side check
+        if (password !== confirmPassword) {
+            resultEl.style.color = "red";
+            resultEl.innerText = "Passwords do not match.";
+            return;
+        }
+
+        const response = await fetch("/api/auth/register/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                password: password,
+                confirm_password: confirmPassword
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // optional: store tokens (or remove these lines if you don't want them)
+            localStorage.setItem("access", data.access);
+            localStorage.setItem("refresh", data.refresh);
+
+            // ✅ show only a short success message
+            resultEl.style.color = "green";
+            resultEl.innerText = "Registration successful! Redirecting to login...";
+
+            // redirect after a short delay
+            setTimeout(() => {
+                window.location.href = "/login/";
+            }, 1500);
+        } else {
+            // ❌ Only on error show the JSON details
+            resultEl.style.color = "red";
+            resultEl.innerText = JSON.stringify(data, null, 2);
+        }
+    };
+</script>
 </body>
 </html>

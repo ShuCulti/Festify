@@ -26,12 +26,17 @@ urlpatterns = [
     path("profile/tickets/", views.user_tickets, name="user-tickets"),
 
     # DRF API under /api/
+    path("api/auth/register/", views.register, name="register-api"),
+    path("api/auth/login/", views.login, name="login-api"),
+    path("api/auth/logout/", views.logout, name="logout-api"),
+    path("api/profile/", views.profile, name="profile-api"),
+    path("api/profile/tickets/", views.user_tickets, name="user-tickets-api"),
     path("api/", include(router.urls)),
 
     # Static HTML pages for frontend
-    path("pages/registration/", views.registration_page, name="registration-page"),
-    path("pages/login/", views.login_page, name="login-page"),
-    path("pages/logout/", views.logout_page, name="logout-page"),
-    path("pages/profile/", views.profile_page, name="profile-page"),
-    path("pages/tickets/", views.tickets_page, name="tickets-page"),
+    path("register/", views.registration_page, name="registration-page"),
+    path("login/", views.login_page, name="login-page"),
+    path("logout/", views.logout_page, name="logout-page"),
+    path("profile-page/", views.profile_page, name="profile-page"),
+    path("tickets-page/", views.tickets_page, name="tickets-page"),
 ]

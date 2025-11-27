@@ -1,12 +1,5 @@
 from django.contrib import admin
-from .models import (
-    UserProfile,
-    Artist,
-    Event,
-    Ticket,
-    Stage,
-    Performance,
-)
+from .models import UserProfile, Artist, Event, Ticket, Stage, Performance
 
 
 @admin.register(UserProfile)
@@ -62,7 +55,8 @@ class StageAdmin(admin.ModelAdmin):
 class PerformanceAdmin(admin.ModelAdmin):
     list_display = ("get_label", "artist", "stage", "event", "start_time", "end_time")
     list_filter = ("event", "stage", "artist")
-    ordering = ("event__start_date", "start_time")
+    # 🔴 FIXED: use event__start_datetime instead of event__start_date
+    ordering = ("event__start_datetime", "start_time")
 
     def get_label(self, obj):
         return obj.title or obj.artist.name
