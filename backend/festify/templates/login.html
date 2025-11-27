@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
+{% extends 'events/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
 <h1>Login</h1>
 
 <form id="loginForm">
@@ -45,13 +42,14 @@
             // save tokens
             localStorage.setItem("access", data.access);
             localStorage.setItem("refresh", data.refresh);
+            // 🔹 save username from API response
+            localStorage.setItem("username", data.user.username);
 
             resultEl.style.color = "green";
             resultEl.innerText = "Login successful! Redirecting...";
 
-            // redirect to home or profile
             setTimeout(() => {
-                window.location.href = "/";  // or "/" if you prefer
+                window.location.href = "/";  // or "/profile-page/"
             }, 1500);
         } else {
             resultEl.style.color = "red";
@@ -59,5 +57,5 @@
         }
     };
 </script>
-</body>
-</html>
+
+{% endblock %}

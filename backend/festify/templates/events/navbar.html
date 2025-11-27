@@ -1,17 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-    <nav>
-        <a href="{% url 'events:home' %}">Home</a>
-        <a href="{% url 'events:calendar' %}">Calendar</a>
-        <a href="#">Map</a>
-    </nav>
+<nav>
+    <a href="{% url 'events:home' %}">Home</a>
+    <a href="{% url 'events:calendar' %}">Calendar</a>
+    <a href="#">Map</a>
 
-</body>
-</html>
+    <!-- Guest -->
+    <span id="auth-guest">
+        <a href="{% url 'events:registration-page' %}">Register</a>
+        <a href="{% url 'events:login-page' %}">Login</a>
+    </span>
+
+    <!-- Logged in -->
+    <span id="auth-user" style="display:none;">
+        <span id="welcomeUser" style="margin-right: 10px;"></span>
+        <a href="{% url 'events:profile-page' %}">Profile</a>
+        <button type="button" id="logoutBtn">Logout</button>
+    </span>
+</nav>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const guestSection = document.getElementById("auth-guest");
+    const userSection = document.getElementById("auth-user");
+    const welcomeUser = document.getElementById("welcomeUser");
+
+    const accessToken = localStorage.getItem("access");
+    const username = localStorage.getItem("username");
+
+    if (accessToken) {
+        guestSection.style.display = "none";
+        userSection.style.display = "inline";
+
+        if (username) {
+            welcomeUser.textContent = "Logged in as " + username;
+        } else {
+            welcomeUser.textContent = "Logged in";
+        }
+    } else {
+        guestSection.style.display = "inline";
+        userSection.style.display = "none";
+    }
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async function () {
+            const refresh = localStorage.getItem("refresh");
+
+            try {
+                if (refresh) {
+                    await fetch("/api/auth/logout/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + accessToken
+                        },
+                        body: JSON.stringify({ refresh: refresh })
+                    });
+                }
+            } catch (e) {
+                // ignore errors
+            }
+
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            localStorage.removeItem("username");
+
+            window.location.href = "{% url 'events:home' %}";
+        });
+    }
+});
+</script>
