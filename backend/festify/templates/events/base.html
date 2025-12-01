@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./">
+    <title>{% block title %}Festify{% endblock %}</title>
+    <!-- Include your CSS directly -->
     <style>
         {% include 'style.css' %}
     </style>
 </head>
 <body>
     {% include 'events/navbar.html' %}
-
-    {% block content %}
-
-    {% endblock %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>

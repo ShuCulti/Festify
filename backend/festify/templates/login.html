@@ -3,19 +3,21 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h1>Login</h1>
+<div class="login-container">
+    <h1>Login</h1>
 
-<form id="loginForm">
-    <label>Username or Email:</label><br>
-    <input type="text" id="username"><br><br>
+    <form id="loginForm">
+        <label>Username or Email:</label>
+        <input type="text" id="username">
 
-    <label>Password:</label><br>
-    <input type="password" id="password"><br><br>
+        <label>Password:</label>
+        <input type="password" id="password">
 
-    <button type="submit">Login</button>
-</form>
+        <button type="submit">Login</button>
+    </form>
 
-<p id="result" style="white-space: pre-wrap;"></p>
+    <p id="result" style="white-space: pre-wrap;"></p>
+</div>
 
 <script>
     document.getElementById("loginForm").onsubmit = async function (e) {
@@ -39,17 +41,15 @@
         const data = await response.json();
 
         if (response.ok) {
-            // save tokens
             localStorage.setItem("access", data.access);
             localStorage.setItem("refresh", data.refresh);
-            // 🔹 save username from API response
             localStorage.setItem("username", data.user.username);
 
             resultEl.style.color = "green";
             resultEl.innerText = "Login successful! Redirecting...";
 
             setTimeout(() => {
-                window.location.href = "/";  // or "/profile-page/"
+                window.location.href = "/";
             }, 1500);
         } else {
             resultEl.style.color = "red";
@@ -57,5 +57,4 @@
         }
     };
 </script>
-
 {% endblock %}

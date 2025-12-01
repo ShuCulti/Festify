@@ -1,60 +1,36 @@
 {% extends "events/base.html" %}
 
 {% block content %}
-
-<style>
-
-  .cards-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-  }
-
-  .stage-card {
-      background: #c7e4ff;
-      border-radius: 8px;
-      padding: 10px;
-      width: 120px;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  }
-
-  .artist-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-  }
-
-</style>
-
 <div>
   <h2>TODAY'S SCHEDULE ({{ today }})</h2>
 
-  <div class="cards-row">
-    {% for card in stage_cards %}
-      <div class="stage-card">
-        <div>{{ card.stage.name }}</div>
+  <div class="cards-container"> <!-- card behind stage cards only -->
+    <div class="cards-row">
+      {% for card in stage_cards %}
+        <div class="stage-card">
+          <div class="stage-name">{{ card.stage.name }}</div>
 
-        <div>
-          {% if card.performance %}
-            {{ card.performance.event.name }}
-          {% else %}
-            No event
-          {% endif %}
-        </div>
+          <div class="event-name">
+            {% if card.performance %}
+              {{ card.performance.event.name }}
+            {% else %}
+              No event
+            {% endif %}
+          </div>
 
-        <div class="artist-avatar">
-          {% if card.performance and card.performance.artist.image_url %}
-            <img src="{{ card.performance.artist.image_url }}"
-                 alt="{{ card.performance.artist.name }}">
-          {% endif %}
+          <div class="artist-avatar">
+            {% if card.performance and card.performance.artist.image_url %}
+              <img src="{{ card.performance.artist.image_url }}"
+                   alt="{{ card.performance.artist.name }}">
+            {% endif %}
+          </div>
         </div>
-      </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
-    {# All performances today #}
+
   {% if events_with_performances %}
-    <ul>
+    <ul class="events-list">
       {% for item in events_with_performances %}
         {% with event=item.event performances=item.performances %}
           <li>
@@ -73,14 +49,9 @@
     </ul>
   {% endif %}
 
-  {# Map preview placeholder #}
-  <div>
+  <div class="map-preview">
     <h2>MAP PREVIEW</h2>
-    <div>
-      <p>Map</p>
-      <img src="" alt="Map">
-    </div>
+    <img src="" alt="Map">
   </div>
 </div>
-
 {% endblock %}

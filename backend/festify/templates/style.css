@@ -1,7 +1,391 @@
+/* ================= GENERAL ================= */
 body {
-    background-color: aquamarine;
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #656EB8; /* new global background */
+    color: #FFFFFF;       /* all text white */
 }
 
-nav a {
-    margin-right: 12px;
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    color: #FFFFFF; /* white headlines */
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* ================= NAVBAR ================= */
+nav {
+    background-color: #BEE5FF; /* navbar background stays BEE5FF */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+}
+
+.nav-left a,
+.nav-right a,
+.nav-right button {
+    background-color: #77B3CD;
+    color: white;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-right: 10px;
+    transition: background 0.2s;
+    font-weight: 500;
+}
+
+.nav-left a.active {
+    background-color: #81C2DA;
+}
+
+.nav-left a:hover,
+.nav-right a:hover,
+.nav-right button:hover {
+    background-color: #81C2DA;
+}
+
+.nav-right button {
+    border: none;
+    cursor: pointer;
+}
+
+/* ================= HOME PAGE ================= */
+.home-container, .cards-container {
+    background-color: #BEE5FF; /* same card style as calendar */
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 1000px;
+    margin: 30px auto;
+    color: white;
+}
+
+.cards-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 cards per row on desktop */
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stage-card {
+    background: #77B3CD; 
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    color: white;
+    transition: background 0.2s;
+}
+
+.stage-card:hover {
+    background-color: #81C2DA; /* same as button hover */
+}
+
+.artist-avatar img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.events-list {
+    margin-top: 20px;
+    list-style: none;
+    padding-left: 0;
+}
+
+.events-list ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+/* Align TODAY'S SCHEDULE and MAP PREVIEW with cards */
+h2 {
+    margin-left: 20px; /* same padding as card container */
+    margin-top: 20px;
+}
+
+/* ================= CALENDAR ================= */
+table.calendar {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* 7 equal columns */
+    margin-top: 20px;
+}
+
+table.calendar th {
+    background: #6295B4;
+    color: white;
+    padding: 10px 0;
+    font-weight: 600;
+    border-radius: 0;
+}
+
+table.calendar td {
+    width: 14.28%; /* 100/7 */
+    height: 80px;
+    border: 3px solid #81C2DA;
+    text-align: left;
+    vertical-align: top;
+    padding: 4px;
+    position: relative;
+    font-size: 14px;
+    color: white;
+}
+
+/* Day number bubble in top-left */
+table.calendar td span.day-number {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #81C2DA; /* default for current month */
+    font-weight: 600;
+}
+
+/* Days not in current month */
+.not-this-month {
+    background-color: #A4D5EF; /* cell background */
+    color: #dcdcdc; /* muted text */
+}
+
+/* Event labels inside calendar */
+.event-label {
+    display: block;
+    margin-top: 4px;
+    background: #6295B4;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+/* Calendar container */
+.calendar-container {
+    background-color: #BEE5FF;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 30px auto;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Calendar headline / month bubble */
+.calendar-month {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.calendar-month span {
+    background-color: #77B3CD;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-block;
+    color: white;
+}
+
+/* Month navigation arrows styling */
+.calendar-month a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0 15px;
+    font-size: 24px;
+    background-color: #77B3CD;
+    padding: 4px 10px;
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.calendar-month a:hover {
+    background-color: #81C2DA;
+    color: white;
+}
+
+/* ================= LOGIN PAGE ================= */
+.login-container {
+    background-color: #6295B4; /* card behind entire form */
+    border-radius: 16px;
+    padding: 40px 20px;
+    max-width: 450px;
+    margin: 40px auto;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.login-container form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-container label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    width: 80%; /* align with input fields */
+    text-align: left;
+}
+
+.login-container input {
+    width: 80%; /* slightly narrower than the card */
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border: none; /* remove outline */
+    background-color: #77B3CD; /* input field color */
+    color: white;
+    font-size: 14px;
+    text-align: left;
+}
+
+.login-container input::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+.login-container button {
+    width: 80%; /* same width as inputs */
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #77B3CD; /* button same as inputs */
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-container button:hover {
+    background-color: #81C2DA;
+}
+
+/* ================= MAP PREVIEW ================= */
+.map-preview img {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* ================= REGISTER PAGE ================= */
+.register-container {
+    background-color: #6295B4; /* card behind form */
+    border-radius: 16px;
+    padding: 40px 20px;
+    max-width: 450px;
+    margin: 40px auto;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center content horizontally */
+}
+
+.register-container h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.register-container form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.register-container label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    width: 80%; /* narrower labels to align with inputs */
+    text-align: left;
+}
+
+.register-container input {
+    width: 80%; /* narrower inputs */
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border: none; /* remove outline */
+    background-color: #77B3CD;
+    color: white;
+    font-size: 14px;
+    text-align: left;
+}
+
+.register-container input::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+.register-container button {
+    width: 80%; /* same width as inputs */
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #77B3CD;
+    color: white;
+    font-weight: 600;
+    font-size: 16px; /* bigger text */
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.register-container button:hover {
+    background-color: #81C2DA;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+    .cards-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    table.calendar td span.day-number {
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        font-size: 10px;
+    }
+    .cards-row {
+        grid-template-columns: repeat(2, 1fr); 
+    }
+}
+
+@media (max-width: 480px) {
+    table.calendar td span.day-number {
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        font-size: 9px;
+    }
+    .cards-row {
+        grid-template-columns: 1fr; 
+    }
 }

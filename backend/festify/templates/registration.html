@@ -3,75 +3,74 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<h1>Create an Account</h1>
+<div class="register-container">
+    <h1>Create an Account</h1>
 
-<form id="registerForm">
-    <label>Username:</label><br>
-    <input type="text" id="username"><br><br>
+    <form id="registerForm">
+        <label>Username:</label>
+        <input type="text" id="username">
 
-    <label>Email:</label><br>
-    <input type="email" id="email"><br><br>
+        <label>Email:</label>
+        <input type="email" id="email">
 
-    <label>Password:</label><br>
-    <input type="password" id="password"><br><br>
+        <label>Password:</label>
+        <input type="password" id="password">
 
-    <label>Confirm password:</label><br>
-    <input type="password" id="confirm_password"><br><br>
+        <label>Confirm password:</label>
+        <input type="password" id="confirm_password">
 
-    <button type="submit">Register</button>
-</form>
+        <button type="submit">Register</button>
+    </form>
 
-<p id="result" style="white-space: pre-wrap;"></p>
+    <p id="result" style="white-space: pre-wrap;"></p>
+</div>
 
 <script>
-    document.getElementById("registerForm").onsubmit = async function (e) {
-        e.preventDefault();
+document.getElementById("registerForm").onsubmit = async function (e) {
+    e.preventDefault();
 
-        const username = document.getElementById("username").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirm_password").value;
-        const resultEl = document.getElementById("result");
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirm_password").value;
+    const resultEl = document.getElementById("result");
 
-        if (password !== confirmPassword) {
-            resultEl.style.color = "red";
-            resultEl.innerText = "Passwords do not match.";
-            return;
-        }
+    if (password !== confirmPassword) {
+        resultEl.style.color = "red";
+        resultEl.innerText = "Passwords do not match.";
+        return;
+    }
 
-        const response = await fetch("/api/auth/register/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: username,
-                email: email,
-                password: password,
-                confirm_password: confirmPassword
-            })
-        });
+    const response = await fetch("/api/auth/register/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password,
+            confirm_password: confirmPassword
+        })
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (response.ok) {
-            // save tokens
-            localStorage.setItem("access", data.access);
-            localStorage.setItem("refresh", data.refresh);
-            // 🔹 save username
-            localStorage.setItem("username", data.user.username);
+    if (response.ok) {
+        localStorage.setItem("access", data.access);
+        localStorage.setItem("refresh", data.refresh);
+        localStorage.setItem("username", data.user.username);
 
-            resultEl.style.color = "green";
-            resultEl.innerText = "Registration successful! Redirecting to login...";
+        resultEl.style.color = "white";
+        resultEl.innerText = "Registration successful! Redirecting to login...";
 
-            setTimeout(() => {
-                window.location.href = "/login/";
-            }, 1500);
-        } else {
-            resultEl.style.color = "red";
-            resultEl.innerText = JSON.stringify(data, null, 2);
-        }
-    };
+        setTimeout(() => {
+            window.location.href = "/login/";
+        }, 1500);
+    } else {
+        resultEl.style.color = "red";
+        resultEl.innerText = JSON.stringify(data, null, 2);
+    }
+};
 </script>
-
 {% endblock %}
