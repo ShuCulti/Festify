@@ -1,46 +1,46 @@
-{% extends "events/base.html" %}
-{% block content %}
+{% extends "events/base.html" %} {% block content %}
 
 <div class="calendar-container">
-    <h1 class="calendar-month">
-        <a href="{% url 'events:calendar_month' prev_year prev_month %}">&lt;</a>
-        <span>{{ month_name }} {{ year }}</span>
-        <a href="{% url 'events:calendar_month' next_year next_month %}">&gt;</a>
-    </h1>
+  <h1 class="calendar-month">
+    <a href="{% url 'events:calendar_month' prev_year prev_month %}">&lt;</a>
+    <span>{{ month_name }} {{ year }}</span>
+    <a href="{% url 'events:calendar_month' next_year next_month %}">&gt;</a>
+  </h1>
 
-    <table class="calendar">
-        <tr>
-            <th>Mon</th><th>Tue</th><th>Wed</th>
-            <th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
-        </tr>
+  <table class="calendar">
+    <tr>
+      <th>Mon</th>
+      <th>Tue</th>
+      <th>Wed</th>
+      <th>Thu</th>
+      <th>Fri</th>
+      <th>Sat</th>
+      <th>Sun</th>
+    </tr>
 
-        {% for week in weeks %}
-            <tr>
-                {% for day in week %}
-                    {% if not day.in_month %}
-                        <td class="not-this-month">
-                            <span class="day-number">{{ day.date.day }}</span>
-                        </td>
-                    {% else %}
-                        {% if day.events %}
-                            <td class="event-day">
-                                <span class="day-number">{{ day.date.day }}</span>
-                                {% for evt in day.events %}
-                                    <a href="{% url 'events:event_detail' evt.pk %}" class="event-label">
-                                        {{ evt.name }}
-                                    </a>
-                                {% endfor %}
-                            </td>
-                        {% else %}
-                            <td>
-                                <span class="day-number">{{ day.date.day }}</span>
-                            </td>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
-            </tr>
+    {% for week in weeks %}
+    <tr>
+      {% for day in week %} {% if not day.in_month %}
+      <td class="not-this-month">
+        <span class="day-number">{{ day.date.day }}</span>
+      </td>
+      {% else %} {% if day.events %}
+      <td class="event-day">
+        <span class="day-number">{{ day.date.day }}</span>
+        {% for evt in day.events %}
+        <a href="{% url 'events:event_detail' evt.pk %}" class="event-label">
+          {{ evt.title }}
+        </a>
         {% endfor %}
-    </table>
+      </td>
+      {% else %}
+      <td>
+        <span class="day-number">{{ day.date.day }}</span>
+      </td>
+      {% endif %} {% endif %} {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
 </div>
 
 {% endblock %}
