@@ -3,58 +3,282 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<div>
-    
+<style>
+.profile-container {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.profile-card {
+    background-color: #BEE5FF;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    background: #77B3CD;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 600;
+    color: white;
+}
+
+.profile-info h1 {
+    margin: 0 0 10px 0;
+    font-size: 32px;
+}
+
+.profile-email {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 5px 0;
+}
+
+.organizer-badge {
+    display: inline-block;
+    background: #77B3CD;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.profile-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.profile-stat {
+    background: #77B3CD;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.profile-stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.profile-stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.section-title {
+    font-size: 24px;
+    margin: 30px 0 15px 0;
+    color: white;
+}
+
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.event-card {
+    background: #77B3CD;
+    border-radius: 12px;
+    padding: 15px;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.event-card:hover {
+    background-color: #81C2DA;
+}
+
+.event-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.event-details {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.guest-message {
+    text-align: center;
+    padding: 40px;
+}
+
+.guest-message a {
+    color: #BEE5FF;
+    text-decoration: underline;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+}
+</style>
+
+<div class="profile-container">
+    <div id="loading" class="loading">Loading profile...</div>
+    <div id="guest-section" style="display: none;">
+        <div class="profile-card">
+            <div class="guest-message">
+                <h1>Please Log In</h1>
+                <p>You need to be logged in to view your profile.</p>
+                <p><a href="{% url 'events:login' %}">Go to Login</a></p>
+            </div>
+        </div>
+    </div>
+    <div id="profile-section" style="display: none;">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar" id="avatar"></div>
+                <div class="profile-info">
+                    <h1 id="username"></h1>
+                    <div class="profile-email" id="email"></div>
+                    <div id="organizer-badge" style="display: none;">
+                        <span class="organizer-badge">Event Organizer</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-details">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="tickets-count">0</div>
+                    <div class="profile-stat-label">Tickets Purchased</div>
+                </div>
+                <div class="profile-stat" id="hosted-stat" style="display: none;">
+                    <div class="profile-stat-value" id="hosted-count">0</div>
+                    <div class="profile-stat-label">Events Hosted</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tickets-section" style="display: none;">
+            <h2 class="section-title">My Tickets</h2>
+            <div class="event-grid" id="tickets-grid"></div>
+        </div>
+
+        <div id="hosted-section" style="display: none;">
+            <h2 class="section-title">Events I'm Hosting</h2>
+            <div class="event-grid" id="hosted-grid"></div>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const guestSection = document.getElementById("auth-guest");
-    const userSection = document.getElementById("auth-user");
-    const welcomeUser = document.getElementById("welcomeUser");
-
+document.addEventListener("DOMContentLoaded", async function () {
     const accessToken = localStorage.getItem("access");
-    const username = localStorage.getItem("username");
+    const loadingEl = document.getElementById("loading");
+    const guestSection = document.getElementById("guest-section");
+    const profileSection = document.getElementById("profile-section");
 
-    if (accessToken) {
-        guestSection.style.display = "none";
-        userSection.style.display = "inline";
-
-        if (username) {
-            welcomeUser.textContent = "Logged in as " + username;
-        } else {
-            welcomeUser.textContent = "Logged in";
-        }
-    } else {
-        guestSection.style.display = "inline";
-        userSection.style.display = "none";
+    if (!accessToken) {
+        loadingEl.style.display = "none";
+        guestSection.style.display = "block";
+        return;
     }
 
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async function () {
-            const refresh = localStorage.getItem("refresh");
-            try {
-                if (refresh) {
-                    await fetch("/api/auth/logout/", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": "Bearer " + accessToken
-                        },
-                        body: JSON.stringify({ refresh: refresh })
-                    });
-                }
-            } catch (e) { }
-
-
-            window.location.href = "{% url 'events:home' %}";
+    try {
+        const response = await fetch("/api/profile/", {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            }
         });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch profile");
+        }
+
+        const data = await response.json();
+
+        loadingEl.style.display = "none";
+        profileSection.style.display = "block";
+
+        // Set avatar initial
+        document.getElementById("avatar").textContent = data.username.charAt(0).toUpperCase();
+
+        // Set profile info
+        document.getElementById("username").textContent = data.username;
+        document.getElementById("email").textContent = data.email;
+
+        // Show organizer badge if applicable
+        if (data.is_organizer) {
+            document.getElementById("organizer-badge").style.display = "block";
+            document.getElementById("hosted-stat").style.display = "block";
+        }
+
+        // Set ticket count
+        document.getElementById("tickets-count").textContent = data.tickets.length;
+
+        // Display tickets
+        if (data.tickets.length > 0) {
+            document.getElementById("tickets-section").style.display = "block";
+            const ticketsGrid = document.getElementById("tickets-grid");
+            data.tickets.forEach(ticket => {
+                const eventCard = createEventCard(ticket.event);
+                ticketsGrid.appendChild(eventCard);
+            });
+        }
+
+        // Display hosted events
+        if (data.is_organizer && data.hosted_events.length > 0) {
+            document.getElementById("hosted-section").style.display = "block";
+            document.getElementById("hosted-count").textContent = data.hosted_events.length;
+            const hostedGrid = document.getElementById("hosted-grid");
+            data.hosted_events.forEach(event => {
+                const eventCard = createEventCard(event);
+                hostedGrid.appendChild(eventCard);
+            });
+        }
+
+    } catch (error) {
+        console.error("Error loading profile:", error);
+        loadingEl.style.display = "none";
+        guestSection.style.display = "block";
     }
 });
-</script>
 
-    
-    <h1 class="ProfileName">{{username}}</h1>
-</div>
+function createEventCard(event) {
+    const card = document.createElement("div");
+    card.className = "event-card";
+
+    const date = new Date(event.start_datetime);
+    const formattedDate = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    card.innerHTML = `
+        <div class="event-title">${event.title}</div>
+        <div class="event-details">
+            <div>${formattedDate}</div>
+            <div>${event.location_name}</div>
+        </div>
+    `;
+
+    return card;
+}
+</script>
 
 {% endblock %}
 
