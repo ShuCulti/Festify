@@ -5,15 +5,16 @@
 {% if performances %}
 <ul>
   {% for perf in performances %}
+  {{ perf.event.start_datetime|date:"d.m.Y" }}
+  
   <li>
-    <strong>{{ perf.event.title }}</strong> — {{ perf.start_time }}–{{
-    perf.end_time }} {% if perf.artist %} by {{ perf.artist.name }}{% endif %}
+    <strong>{{ perf.event.title }}</strong> 
+    {{ perf.start_time|date:"g:i a" }}{{ perf.end_time|date:"g:i a" }}
+    {% if perf.artist %} by {{ perf.artist.name }}{% endif %}
   </li>
   {% endfor %}
 </ul>
 {% else %}
 <p>No performances scheduled for this stage.</p>
 {% endif %}
-
-<p><a href="{% url 'events:map-page' %}">Back to map</a></p>
 {% endblock %}

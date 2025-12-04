@@ -268,7 +268,24 @@ def logout_page(request):
     return render(request, 'logout.html')
 
 def profile_page(request):
-    return render(request, 'profile.html')
+    # Provide server-side context so the template can render profile data
+    if request.user.is_authenticated:
+        user = request.user
+        profile = getattr(user, 'profile', None)
+        tickets = Ticket.objects.filter(user=user).select_related('event')
+        hosted_events = Event.objects.filter(host=user) if (profile and profile.is_organizer) else []
+
+        context = {
+            'username': user.username,
+            'email': user.email,
+            'is_organizer': profile.is_organizer if profile else False,
+            'tickets': tickets,
+            'hosted_events': hosted_events,
+        }
+    else:
+        context = {}
+
+    return render(request, 'profile.html', context)
 
 def tickets_page(request):
     return render(request, 'tickets.html')
