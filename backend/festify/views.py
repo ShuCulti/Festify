@@ -170,6 +170,27 @@ class EventViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def unfollow(self, request, pk=None):
+        event = self.get_object()
+        user = request.user
+
+        try:
+            ticket = Ticket.objects.get(user=user, event=event)
+            ticket.delete()
+            event.tickets_sold -= 1
+            event.save()
+
+            return Response(
+                {'message': 'Successfully unfollowed event'},
+                status=status.HTTP_200_OK
+            )
+        except Ticket.DoesNotExist:
+            return Response(
+                {'error': 'You do not have a ticket for this event'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 # ============================================
 # PROFILE / TICKETS

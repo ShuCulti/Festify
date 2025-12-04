@@ -1,40 +1,253 @@
 {% extends "events/base.html" %}
 
 {% block content %}
-  <h1>{{ event.title }}</h1>
-  <p>
-    <strong>From:</strong>
-    {{ event.start_datetime|date:"F j, Y, g:i a" }}<br>
-    <strong>To:</strong>
-    {% if event.end_datetime %}
-      {{ event.end_datetime|date:"F j, Y, g:i a" }}
-    {% else %}
-      —
-    {% endif %}
-  </p>
+<style>
+.event-detail-container {
+    background-color: #BEE5FF;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 800px;
+    margin: 30px auto;
+    color: white;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.event-title {
+    flex: 1;
+}
+
+.follow-button {
+    background: #77B3CD;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.follow-button:hover:not(:disabled) {
+    background: #81C2DA;
+}
+
+.follow-button.following {
+    background: #4CAF50;
+}
+
+.follow-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.event-info {
+    margin: 20px 0;
+    line-height: 1.8;
+}
+
+.event-info strong {
+    display: inline-block;
+    min-width: 80px;
+}
+
+.performances-section {
+    margin-top: 30px;
+}
+
+.performances-section h2 {
+    margin-bottom: 15px;
+}
+
+.performances-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.performances-section li {
+    background: #77B3CD;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+</style>
+
+<div class="event-detail-container">
+  <div class="event-header">
+    <div class="event-title">
+      <h1>{{ event.title }}</h1>
+    </div>
+    <button id="follow-btn" class="follow-button" onclick="toggleFollow()">
+      Follow
+    </button>
+  </div>
+
+  <div class="event-info">
+    <p>
+      <strong>From:</strong>
+      {{ event.start_datetime|date:"F j, Y, g:i a" }}
+    </p>
+    <p>
+      <strong>To:</strong>
+      {% if event.end_datetime %}
+        {{ event.end_datetime|date:"F j, Y, g:i a" }}
+      {% else %}
+        —
+      {% endif %}
+    </p>
+  </div>
 
   {% if event.description %}
     <p>{{ event.description }}</p>
   {% endif %}
 
-  <h2>Performances</h2>
-  {% if performances %}
-    <ul>
-      {% for perf in performances %}
-        <li>
-          {{ perf.start_time|date:"g:i a" }}–{{ perf.end_time|date:"g:i a" }}:
-          {{ perf.artist.name }} @ {{ perf.stage.name }}
-        </li>
-      {% endfor %}
-    </ul>
-    <p>
-      <strong>Location:</strong>
-      {% if event.location_name %}{{ event.location_name }}{% endif %}
-      {% if event.address %}
-        {% if event.location_name %} — {% endif %}{{ event.address }}
-      {% endif %}
-    </p>
-  {% else %}
-    <p>No performances linked to this event yet.</p>
-  {% endif %}
+  <div class="performances-section">
+    <h2>Performances</h2>
+    {% if performances %}
+      <ul>
+        {% for perf in performances %}
+          <li>
+            {{ perf.start_time|date:"g:i a" }}–{{ perf.end_time|date:"g:i a" }}:
+            {{ perf.artist.name }} @ {{ perf.stage.name }}
+          </li>
+        {% endfor %}
+      </ul>
+      <p>
+        <strong>Location:</strong>
+        {% if event.location_name %}{{ event.location_name }}{% endif %}
+        {% if event.address %}
+          {% if event.location_name %} — {% endif %}{{ event.address }}
+        {% endif %}
+      </p>
+    {% else %}
+      <p>No performances linked to this event yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+const EVENT_ID = {{ event.pk }};
+let isFollowing = false;
+
+// Check if user is following this event
+document.addEventListener("DOMContentLoaded", async function () {
+    const accessToken = localStorage.getItem("access");
+    const btn = document.getElementById("follow-btn");
+
+    if (!accessToken) {
+        btn.textContent = "Login to Follow";
+        btn.disabled = false;
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/profile/", {
+            headers: {
+                "Authorization": "Bearer " + accessToken
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const eventIds = data.tickets.map(ticket => ticket.event.id);
+            isFollowing = eventIds.includes(EVENT_ID);
+
+            updateButtonState();
+        }
+    } catch (error) {
+        console.error("Error checking follow status:", error);
+    }
+});
+
+function updateButtonState() {
+    const btn = document.getElementById("follow-btn");
+    if (isFollowing) {
+        btn.textContent = "Unfollow";
+        btn.classList.add("following");
+    } else {
+        btn.textContent = "Follow";
+        btn.classList.remove("following");
+    }
+    btn.disabled = false;
+}
+
+async function toggleFollow() {
+    const accessToken = localStorage.getItem("access");
+
+    if (!accessToken) {
+        alert("Please log in to follow events");
+        window.location.href = "{% url 'events:login-page' %}";
+        return;
+    }
+
+    const btn = document.getElementById("follow-btn");
+    btn.disabled = true;
+    btn.textContent = "...";
+
+    try {
+        const endpoint = isFollowing
+            ? `/api/events/${EVENT_ID}/unfollow/`
+            : `/api/events/${EVENT_ID}/buy/`;
+
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + accessToken,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            isFollowing = !isFollowing;
+            updateButtonState();
+
+            const message = isFollowing
+                ? "Event followed successfully!"
+                : "Event unfollowed successfully!";
+            showMessage(message);
+        } else {
+            const error = await response.json();
+            alert(error.error || "Failed to update follow status");
+            btn.disabled = false;
+            updateButtonState();
+        }
+    } catch (error) {
+        console.error("Error toggling follow:", error);
+        alert("Failed to update follow status");
+        btn.disabled = false;
+        updateButtonState();
+    }
+}
+
+function showMessage(message) {
+    const messageDiv = document.createElement("div");
+    messageDiv.textContent = message;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        z-index: 1000;
+    `;
+
+    document.body.appendChild(messageDiv);
+
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 3000);
+}
+</script>
+
 {% endblock %}
