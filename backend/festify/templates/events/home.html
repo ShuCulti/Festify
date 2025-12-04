@@ -1,57 +1,57 @@
-{% extends "events/base.html" %}
-
-{% block content %}
+{% extends "events/base.html" %} {% load static %} {% block content %}
 <div>
   <h2>TODAY'S SCHEDULE ({{ today }})</h2>
 
-  <div class="cards-container"> <!-- card behind stage cards only -->
+  <div class="cards-container">
+    <!-- card behind stage cards only -->
     <div class="cards-row">
       {% for card in stage_cards %}
-        <div class="stage-card">
-          <div class="stage-name">{{ card.stage.name }}</div>
+      <div class="stage-card">
+        <div class="stage-name">{{ card.stage.name }}</div>
 
-          <div class="event-name">
-            {% if card.performance %}
-              {{ card.performance.event.name }}
-            {% else %}
-              No event
-            {% endif %}
-          </div>
-
-          <div class="artist-avatar">
-            {% if card.performance and card.performance.artist.image_url %}
-              <img src="{{ card.performance.artist.image_url }}"
-                   alt="{{ card.performance.artist.name }}">
-            {% endif %}
-          </div>
+        <div class="event-name">
+          {% if card.performance %} {{ card.performance.event.name }} {% else %}
+          No event {% endif %}
         </div>
+
+        <div class="artist-avatar">
+          {% if card.performance and card.performance.artist.image_url %}
+          <img
+            src="{{ card.performance.artist.image_url }}"
+            alt="{{ card.performance.artist.name }}"
+          />
+          {% endif %}
+        </div>
+      </div>
       {% endfor %}
     </div>
   </div>
 
   {% if events_with_performances %}
-    <ul class="events-list">
-      {% for item in events_with_performances %}
-        {% with event=item.event performances=item.performances %}
-          <li>
-            <strong>{{ event.name }}</strong> ({{ event.location }})<br>
-            <ul>
-              {% for perf in performances %}
-                <li>
-                  {{ perf.start_time }}–{{ perf.end_time }}:
-                  {{ perf.artist.name }} ({{ perf.stage.name }})
-                </li>
-              {% endfor %}
-            </ul>
-          </li>
-        {% endwith %}
-      {% endfor %}
-    </ul>
+  <ul class="events-list">
+    {% for item in events_with_performances %} {% with event=item.event
+    performances=item.performances %}
+    <li>
+      <strong>{{ event.name }}</strong> ({{ event.location }})<br />
+      <ul>
+        {% for perf in performances %}
+        <li>
+          {{ perf.start_time }}–{{ perf.end_time }}: {{ perf.artist.name }} ({{
+          perf.stage.name }})
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
   {% endif %}
 
   <div class="map-preview">
     <h2>MAP PREVIEW</h2>
-    <img src="" alt="Map">
+    <img
+      src="{% url 'events:map-image' %}"
+      alt="Festival venue map showing stage locations and pathways for navigation"
+    />
   </div>
 </div>
 {% endblock %}

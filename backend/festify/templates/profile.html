@@ -1,11 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-</head>
-<body>
-    <h1>Profile Page</h1>
-</body>
-</html>
+{% extends 'events/base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div>
+    
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const guestSection = document.getElementById("auth-guest");
+    const userSection = document.getElementById("auth-user");
+    const welcomeUser = document.getElementById("welcomeUser");
+
+    const accessToken = localStorage.getItem("access");
+    const username = localStorage.getItem("username");
+
+    if (accessToken) {
+        guestSection.style.display = "none";
+        userSection.style.display = "inline";
+
+        if (username) {
+            welcomeUser.textContent = "Logged in as " + username;
+        } else {
+            welcomeUser.textContent = "Logged in";
+        }
+    } else {
+        guestSection.style.display = "inline";
+        userSection.style.display = "none";
+    }
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async function () {
+            const refresh = localStorage.getItem("refresh");
+            try {
+                if (refresh) {
+                    await fetch("/api/auth/logout/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": "Bearer " + accessToken
+                        },
+                        body: JSON.stringify({ refresh: refresh })
+                    });
+                }
+            } catch (e) { }
+
+
+            window.location.href = "{% url 'events:home' %}";
+        });
+    }
+});
+</script>
+
+    
+    <h1 class="ProfileName">{{username}}</h1>
+</div>
+
+{% endblock %}
+

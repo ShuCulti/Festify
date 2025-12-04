@@ -1,0 +1,19 @@
+{% extends "events/base.html" %} {% block content %}
+<h1>{{ stage.name }}</h1>
+<p>Details for this stage and upcoming performances.</p>
+
+{% if performances %}
+<ul>
+  {% for perf in performances %}
+  <li>
+    <strong>{{ perf.event.title }}</strong> — {{ perf.start_time }}–{{
+    perf.end_time }} {% if perf.artist %} by {{ perf.artist.name }}{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No performances scheduled for this stage.</p>
+{% endif %}
+
+<p><a href="{% url 'events:map-page' %}">Back to map</a></p>
+{% endblock %}

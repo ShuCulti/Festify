@@ -389,3 +389,33 @@ table.calendar td span.day-number {
         grid-template-columns: 1fr; 
     }
 }
+
+/* Map */
+.map-hotspot {
+    text-decoration: none;
+    color: inherit;
+  }
+  .map-hotspot .hotspot-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(230, 84, 85, 0.95);
+    display: block;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+  }
+  .map-hotspot .hotspot-label {
+    display: none;
+    margin-left: 8px;
+    background: rgba(80, 80, 80, 0.9);
+    padding: 4px 8px;
+    border-radius: 6px;
+    position: relative;
+    top: -4px;
+  }
+  .map-hotspot:hover .hotspot-label {
+    display: inline-block;
+  }
+  .map-hotspot {
+    cursor: pointer;
+  }

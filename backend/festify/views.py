@@ -274,6 +274,70 @@ def tickets_page(request):
     return render(request, 'tickets.html')
 
 
+def map_image(request):
+    """Development helper: serve the bundled map image placed in
+    `festify/templates/events/map.png`. This avoids needing to move the
+    image into STATIC during quick local development.
+    """
+    import os
+    from django.http import FileResponse, Http404
+
+    base = os.path.dirname(__file__)
+    path = os.path.join(base, 'templates', 'events', 'map.png')
+    if not os.path.exists(path):
+        raise Http404("Map image not found")
+
+    return FileResponse(open(path, 'rb'), content_type='image/png')
+
+
+def map_page(request):
+    """Render a dedicated HTML page that displays the festival map.
+
+    We also pass simple hotspot positions (percent-based) for each Stage
+    so the template can render clickable elements that redirect to the
+    stage detail pages.
+    """
+    # Get all stages and assign them positions from a small predefined list.
+    stages = list(Stage.objects.order_by('order'))
+
+    # Percent-based positions tuned to the current map image layout.
+    default_positions = [
+        {'left': '59%', 'top': '25%'},  # first stage
+        {'left': '28%', 'top': '39%'},  # second stage
+        {'left': '50%', 'top': '61%'},  # third stage
+    ]
+
+    stage_positions = []
+    for i, stage in enumerate(stages):
+        pos = default_positions[i] if i < len(default_positions) else {'left': '50%', 'top': '50%'}
+        stage_positions.append({
+            'id': stage.id,
+            'name': stage.name,
+            'left': pos['left'],
+            'top': pos['top'],
+        })
+
+    return render(request, 'events/map_page.html', {
+        'stage_positions': stage_positions,
+    })
+
+
+def stage_detail(request, pk):
+    stage = get_object_or_404(Stage, pk=pk)
+    # Show upcoming performances for this stage across events
+    performances = (
+        Performance.objects
+        .filter(stage=stage)
+        .select_related('artist', 'event')
+        .order_by('event__start_datetime', 'start_time')
+    )
+
+    return render(request, 'events/stage_detail.html', {
+        'stage': stage,
+        'performances': performances,
+    })
+
+
 # ============================================
 # FESTIVAL HTML VIEWS (Stage + Performance)
 # ============================================

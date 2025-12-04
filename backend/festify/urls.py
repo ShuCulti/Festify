@@ -32,6 +32,8 @@ urlpatterns = [
     path("api/profile/", views.profile, name="profile-api"),
     path("api/profile/tickets/", views.user_tickets, name="user-tickets-api"),
     path("api/", include(router.urls)),
+    # Backwards-compatible route: allow /api/map/ to render the map page
+    path("api/map/", views.map_page, name="api-map"),
 
     # Static HTML pages for frontend
     path("register/", views.registration_page, name="registration-page"),
@@ -39,4 +41,10 @@ urlpatterns = [
     path("logout/", views.logout_page, name="logout-page"),
     path("profile-page/", views.profile_page, name="profile-page"),
     path("tickets-page/", views.tickets_page, name="tickets-page"),
+    # Development helper: serve the embedded map image so templates can use it
+    path("map-image/", views.map_image, name="map-image"),
+    # Page that displays the festival map
+    path("map/", views.map_page, name="map-page"),
+    # Stage detail page (clickable hotspots on the map will link here)
+    path("stage/<int:pk>/", views.stage_detail, name="stage-detail"),
 ]

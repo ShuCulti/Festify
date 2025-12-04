@@ -1,0 +1,52 @@
+{% extends "events/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="map-page-container">
+  <h1>Festival Map</h1>
+  <p>
+    Below is the venue map showing stages and amenities. Click a stage marker to
+    view details.
+  </p>
+  <div class="map-preview" style="position: relative; display: inline-block">
+    <img
+      id="festival-map"
+      src="{% url 'events:map-image' %}"
+      alt="Festival map"
+      style="display: block; max-width: 100%; height: auto"
+    />
+
+    {% comment %}
+      Render hotspots passed from the view. Each hotspot is absolutely
+      positioned using percent coordinates.
+    {% endcomment %}
+
+    {% for s in stage_positions %}
+      <a
+        href="{% url 'events:stage-detail' s.id %}"
+        class="map-hotspot"
+        title="{{ s.name }}"
+        style="position:absolute; left:{{ s.left }}; top:{{ s.top }}; transform:translate(-50%,-50%);"
+      >
+        <span class="hotspot-dot" aria-hidden="true"></span>
+        <span class="hotspot-label">{{ s.name }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.map-hotspot').forEach(function (el) {
+      el.addEventListener('click', function (ev) {
+        const href = el.getAttribute('href');
+        if (href) {
+          window.location.href = href;
+        }
+        ev.preventDefault();
+      });
+    });
+  });
+</script>
+
+{% endblock %}
